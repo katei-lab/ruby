@@ -230,6 +230,16 @@ foreach(source ${RBINC_SOURCES})
   list(APPEND rbinc_outputs ${rbinc_output})
 endforeach()
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/node_name.inc
+  COMMAND
+    ${BASERUBY} -n ${RUBY_TOOLDIR}/node_name.rb
+      < ${CMAKE_CURRENT_SOURCE_DIR}/node.h > ${CMAKE_CURRENT_BINARY_DIR}/node_name.inc
+  DEPENDS
+    ${RUBY_TOOLDIR}/node_name.rb
+    ${CMAKE_CURRENT_SOURCE_DIR}/node.h
+)
+
 set(ARCH_FLAG)
 set(UNIVERSAL_ARCHNAMES)
 add_custom_command(
@@ -263,6 +273,7 @@ add_library(ruby-static STATIC
   ${CMAKE_CURRENT_BINARY_DIR}/id.c
   ${CMAKE_CURRENT_BINARY_DIR}/probes.h
   ${CMAKE_CURRENT_BINARY_DIR}/known_errors.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/node_name.inc
   ${CMAKE_CURRENT_BINARY_DIR}/mjit_config.h
   vm.c
   ruby.c)
