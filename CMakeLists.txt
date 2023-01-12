@@ -230,6 +230,31 @@ foreach(source ${RBINC_SOURCES})
   list(APPEND rbinc_outputs ${rbinc_output})
 endforeach()
 
+set(ARCH_FLAG)
+set(UNIVERSAL_ARCHNAMES)
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mjit_config.h
+  COMMAND env
+    "Q=@"
+    "UNIVERSAL_ARCHNAMES="
+    "ARCH_FLAG="
+    "MJIT_HEADER_INSTALL_DIR=include/ruby-3.3.0+0/x86_64-linux"
+    "rubyarchhdrdir=/usr/local/include/ruby-3.3.0+0/x86_64-linux"
+    "MJIT_MIN_HEADER_NAME=rb_mjit_min_header-3.3.0.h"
+    "MJIT_CC=/usr/bin/cc"
+    "MJIT_CFLAGS=-w  -fdeclspec"
+    "MJIT_OPTFLAGS=-O3 -fno-fast-math"
+    "MJIT_DEBUGFLAGS=-ggdb3"
+    "MJIT_LDSHARED=/usr/bin/cc -shared"
+    "MJIT_DLDFLAGS=-Wl,--compress-debug-sections=zlib"
+    "MJIT_LIBS=-Wl,-rpath,/usr/local/lib -L/usr/local/lib "
+    "PRELOADENV=LD_PRELOAD"
+    ${RUBY_TOOLDIR}/mjit_make_config.sh > ${CMAKE_CURRENT_BINARY_DIR}/mjit_config.h
+  DEPENDS
+    ${RUBY_TOOLDIR}/node_name.rb
+    ${CMAKE_CURRENT_SOURCE_DIR}/node.h
+)
+
 add_library(ruby-static STATIC
   ${rbinc_outputs}
   ${CMAKE_CURRENT_BINARY_DIR}/insns.inc
@@ -238,6 +263,7 @@ add_library(ruby-static STATIC
   ${CMAKE_CURRENT_BINARY_DIR}/id.c
   ${CMAKE_CURRENT_BINARY_DIR}/probes.h
   ${CMAKE_CURRENT_BINARY_DIR}/known_errors.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/mjit_config.h
   vm.c
   ruby.c)
 
